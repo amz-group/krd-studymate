@@ -13,6 +13,7 @@ export const translations = {
     'nav.study': 'Study Assistant',
     'nav.projects': 'My Projects',
     'nav.settings': 'Settings',
+    'nav.about': 'About',
 
     'home.welcome': 'Welcome to KRD StudyMate',
     'home.subtitle': 'Everything you need for your academic work in one place.',
@@ -648,6 +649,7 @@ export const translations = {
     'nav.study': 'یاریدەدەری خوێندن',
     'nav.projects': 'پڕۆژەکانم',
     'nav.settings': 'ڕێکخستنەکان',
+    'nav.about': 'دەربارە',
 
     'home.welcome': 'بەخێرهاتن بۆ KRD StudyMate',
     'home.subtitle': 'هەموو ئەوەی پێویستە بۆ کارە ئەکادیمیەکانت لە یەک شوێندا.',
@@ -1166,6 +1168,7 @@ export const translations = {
     'nav.study': 'مساعد الدراسة',
     'nav.projects': 'مشاريعي',
     'nav.settings': 'الإعدادات',
+    'nav.about': 'حول',
 
     'home.welcome': 'مرحباً بك في KRD StudyMate',
     'home.subtitle': 'كل ما تحتاجه لعملك الأكاديمي في مكان واحد.',
