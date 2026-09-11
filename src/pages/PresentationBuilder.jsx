@@ -10,12 +10,11 @@ import TopicStep from '@/components/presentation/steps/TopicStep';
 import LanguageStep from '@/components/presentation/steps/LanguageStep';
 import SlidesStep from '@/components/presentation/steps/SlidesStep';
 import StudentInfoStep from '@/components/presentation/steps/StudentInfoStep';
-import ContentStep from '@/components/presentation/steps/ContentStep';
-import DesignStep from '@/components/presentation/steps/DesignStep';
+import VisualEditor from '@/components/presentation/editor/VisualEditor';
 import PreviewStep from '@/components/presentation/steps/PreviewStep';
 import { Button } from '@/components/ui/button';
 
-const stepKeys = ['pb.step.topic', 'pb.step.language', 'pb.step.slides', 'pb.step.student', 'pb.step.content', 'pb.step.design', 'pb.step.preview'];
+const stepKeys = ['pb.step.topic', 'pb.step.language', 'pb.step.slides', 'pb.step.student', 'pb.step.content', 'pb.step.preview'];
 
 function Wizard({ initial }) {
   const { t, autoSave, dir } = useApp();
@@ -26,10 +25,8 @@ function Wizard({ initial }) {
   const [attempted, setAttempted] = useState(false);
   const { presentation, update, undo, redo, canUndo, canRedo } = usePresentationState(initial);
 
-  // The hook holds the WHOLE project; steps edit presentation *content*. Wrap the
-  // whole-project update so step code can treat the updater argument as `content`
-  // (e.g. update(c => ({ ...c, topic: {...} }))) and it lands in project.content,
-  // never on the project root.
+  // Steps and the visual editor edit presentation *content*. Wrap the
+  // whole-project update so updater code can treat its argument as `content`.
   const updateContent = useCallback((updater) => {
     update((project) => ({
       ...project,
@@ -37,8 +34,6 @@ function Wizard({ initial }) {
     }));
   }, [update]);
 
-  // Keep the latest state accessible to a stable persist callback so we don't
-  // recreate persist on every keystroke (which would churn the auto-save effect).
   const latestRef = useRef({ presentation, step });
   latestRef.current = { presentation, step };
 
@@ -56,21 +51,16 @@ function Wizard({ initial }) {
     await saveProject(proj);
   }, [projectId, t, initial.created_date]);
 
-  // Auto-save (debounced) when enabled. Editing state lives in React; we only
-  // write to IndexedDB after the user pauses typing — never on every keystroke.
   useEffect(() => {
     if (!autoSave) return;
     setSaveState('saving');
-    const timer = setTimeout(async () => {
-      await persist(null);
-      setSaveState('saved');
-    }, 800);
+    const timer = setTimeout(async () => { await persist(null); setSaveState('saved'); }, 700);
     return () => clearTimeout(timer);
   }, [presentation, autoSave, persist]);
 
   // Ensure slides exist when entering the editor from a saved draft.
   useEffect(() => {
-    if (presentation.content.slides.length === 0 && step >= 3) {
+    if (presentation.content.slides.length === 0 && step >= 4) {
       updateContent((c) => ({ ...c, slides: generateSlides(c.topic, c.slideCount, t) }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,7 +78,7 @@ function Wizard({ initial }) {
     if (step === 2) {
       updateContent((c) => (c.slides.length === 0 || c.slides.length !== c.slideCount ? { ...c, slides: generateSlides(c.topic, c.slideCount, t) } : c));
     }
-    setStep(Math.min(step + 1, 6));
+    setStep(Math.min(step + 1, 5));
     await persist(null);
   };
   const goBack = async () => { setAttempted(false); setStep((s) => Math.max(0, s - 1)); await persist(null); };
@@ -96,8 +86,9 @@ function Wizard({ initial }) {
   const saveDraft = async () => { await persist('draft'); setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); };
   const finish = async () => { await persist('completed'); navigate('/projects'); };
 
-  const steps = [TopicStep, LanguageStep, SlidesStep, StudentInfoStep, ContentStep, DesignStep, PreviewStep];
+  const steps = [TopicStep, LanguageStep, SlidesStep, StudentInfoStep, VisualEditor, PreviewStep];
   const StepComp = steps[step];
+  const isEditor = step === 4;
 
   return (
     <div className="flex flex-col">
@@ -117,16 +108,23 @@ function Wizard({ initial }) {
         <WizardStepper steps={stepKeys} current={step} onJump={jumpTo} />
       </div>
 
-      <div className="px-4 md:px-6">
-        {step === 6
-          ? <PreviewStep presentation={presentation} onFinish={finish} />
-          : <StepComp presentation={presentation} update={updateContent} />}
-        {step !== 6 && attempted && !canProceed && (
-          <p className="text-xs text-destructive mt-4 text-center">{step === 0 ? t('pb.topic.titleRequired') : t('pb.slides.invalid')}</p>
-        )}
-      </div>
+      {isEditor ? (
+        <div className="h-[calc(100vh-9rem)] md:h-[calc(100vh-8rem)]">
+          <VisualEditor presentation={presentation} update={updateContent} undo={undo} redo={redo} canUndo={canUndo} canRedo={canRedo}
+            onPreview={() => setStep(5)} onSave={saveDraft} saveState={saveState} />
+        </div>
+      ) : (
+        <div className="px-4 md:px-6">
+          {step === 5
+            ? <PreviewStep presentation={presentation} onFinish={finish} />
+            : <StepComp presentation={presentation} update={updateContent} />}
+          {step !== 5 && attempted && !canProceed && (
+            <p className="text-xs text-destructive mt-4 text-center">{step === 0 ? t('pb.topic.titleRequired') : t('pb.slides.invalid')}</p>
+          )}
+        </div>
+      )}
 
-      {step !== 6 && (
+      {step !== 5 && !isEditor && (
         <div className="px-4 md:px-6 py-3 border-t border-border flex items-center justify-between gap-3 sticky bottom-0 bg-background">
           <Button variant="ghost" onClick={goBack} disabled={step === 0} className="gap-1.5"><ArrowLeft className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />{t('pb.back')}</Button>
           <Button onClick={goNext} className="gap-1.5">{t('pb.next')}<ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} /></Button>

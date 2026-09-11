@@ -1,32 +1,8 @@
 import { createId, createProjectShell } from './db';
 import { rtlLanguages } from './translations';
-
-// Six clean academic themes. Colors are fixed per theme (independent of app dark mode).
-export const themes = [
-  { id: 'modern-blue', nameKey: 'pb.theme.modernBlue', bg: '#ffffff', primary: '#2563eb', accent: '#60a5fa', text: '#0f172a', muted: '#64748b' },
-  { id: 'minimal-light', nameKey: 'pb.theme.minimalLight', bg: '#ffffff', primary: '#111827', accent: '#6b7280', text: '#111827', muted: '#6b7280' },
-  { id: 'dark-pro', nameKey: 'pb.theme.darkPro', bg: '#0f172a', primary: '#38bdf8', accent: '#818cf8', text: '#f1f5f9', muted: '#94a3b8' },
-  { id: 'academic-green', nameKey: 'pb.theme.academicGreen', bg: '#ffffff', primary: '#047857', accent: '#10b981', text: '#064e3b', muted: '#6b7280' },
-  { id: 'elegant-purple', nameKey: 'pb.theme.elegantPurple', bg: '#ffffff', primary: '#7c3aed', accent: '#a78bfa', text: '#1e1b4b', muted: '#6b7280' },
-  { id: 'simple-gray', nameKey: 'pb.theme.simpleGray', bg: '#ffffff', primary: '#374151', accent: '#6b7280', text: '#111827', muted: '#6b7280' },
-];
-
-export function getTheme(id) {
-  return themes.find((t) => t.id === id) || themes[0];
-}
-
-export function resolveDesign(design) {
-  const theme = getTheme(design?.theme);
-  return {
-    ...design,
-    theme,
-    primary: design?.primaryColor || theme.primary,
-    accent: design?.accentColor || theme.accent,
-    bg: theme.bg,
-    text: theme.text,
-    muted: theme.muted,
-  };
-}
+import {
+  defaultTextContent, getLayoutSpec, getTemplate, templates, examples,
+} from './presentationAssets';
 
 export function baseDimensions(ratio) {
   return ratio === '4:3' ? { w: 1024, h: 768 } : { w: 1280, h: 720 };
@@ -36,48 +12,110 @@ export function isRtl(language) {
   return rtlLanguages.includes(language);
 }
 
-export function newSlide(type = 'content', t) {
-  return {
-    id: createId(),
-    type,
-    title: '',
-    body: '',
-    bullets: type === 'content' ? ['', '', ''] : [],
-    notes: '',
-    image: '',
+export function newElement(type, partial = {}) {
+  const el = {
+    id: createId(), type, x: 200, y: 200, width: 400, height: 120,
+    rotation: 0, zIndex: 1, locked: false, styles: {}, content: {}, role: partial.role || null,
+    ...partial,
   };
+  if (type === 'text' && !partial.content) el.content = defaultTextContent(el.role || 'body');
+  if (type === 'image' && !partial.content) el.content = { src: '', fit: 'cover', radius: 12, shadow: false, opacity: 1 };
+  if (type === 'shape' && !partial.content) el.content = { shape: 'rect', fill: '#2563eb', border: 'transparent', borderWidth: 0, radius: 0, opacity: 1 };
+  if (type === 'icon' && !partial.content) el.content = { name: 'GraduationCap', color: '#2563eb', size: 64, opacity: 1 };
+  return el;
 }
 
-// Build editable starter slides from the topic + count. No AI — local placeholders.
+export function newSlide(background, elements = [], notes = '') {
+  return { id: createId(), background: background || { type: 'solid', color: '#ffffff' }, elements, notes };
+}
+
+export function buildSlideFromLayout(layoutId, t, background) {
+  const specs = getLayoutSpec(layoutId, t);
+  const elements = specs.map((s) => newElement(s.type, {
+    x: s.x, y: s.y, width: s.w, height: s.h, role: s.role, content: s.content,
+  }));
+  return newSlide(background || { type: 'solid', color: '#ffffff' }, elements, '');
+}
+
+// Convert an old-style slide (title/body/bullets/image) to the element model.
+export function migrateSlide(old, t) {
+  if (old && Array.isArray(old.elements)) {
+    return { ...old, notes: old.notes || '', elements: old.elements.map((e) => ({ ...newElement(e.type, e), ...e })) };
+  }
+  const bg = { type: 'solid', color: '#ffffff' };
+  const els = [];
+  if (old.type === 'title') {
+    els.push(newElement('text', { role: 'heading', x: 140, y: 260, width: 1000, height: 140, content: { ...defaultTextContent('heading'), text: old.title || '', align: 'center', size: 64 } }));
+    if (old.subtitle) els.push(newElement('text', { role: 'subheading', x: 300, y: 420, width: 680, height: 60, content: { ...defaultTextContent('subheading'), text: old.subtitle, align: 'center' } }));
+  } else if (old.type === 'references') {
+    els.push(newElement('text', { role: 'heading', x: 80, y: 70, width: 1120, height: 90, content: { ...defaultTextContent('heading'), text: old.title || t('slide.references') } }));
+    els.push(newElement('text', { role: 'body', x: 80, y: 190, width: 1120, height: 420, content: { ...defaultTextContent('body'), text: '' } }));
+  } else {
+    els.push(newElement('text', { role: 'heading', x: 80, y: 70, width: 1120, height: 90, content: { ...defaultTextContent('heading'), text: old.title || '' } }));
+    let y = 190;
+    if (old.body) { els.push(newElement('text', { role: 'body', x: 80, y, width: 1120, height: 140, content: { ...defaultTextContent('body'), text: old.body } })); y += 160; }
+    if (old.bullets && old.bullets.length) {
+      els.push(newElement('text', { role: 'body', x: 80, y, width: 1120, height: 260, content: { ...defaultTextContent('body'), text: old.bullets.filter((b) => b).join('\n'), listType: 'bullet' } }));
+    }
+    if (old.image) els.push(newElement('image', { x: 480, y: 380, width: 320, height: 240, content: { src: old.image, fit: 'cover', radius: 12, shadow: false, opacity: 1 } }));
+  }
+  return newSlide(bg, els, old.notes || '');
+}
+
+// Apply a template to a slide, preserving element text content.
+export function applyTemplate(slide, template, isCover) {
+  const scheme = isCover ? template.cover : template.content;
+  const next = { ...slide, background: scheme.bg };
+  next.elements = slide.elements.map((el) => {
+    if (el.type === 'text') {
+      const role = el.role || (el.content.size >= 44 ? 'heading' : 'body');
+      let color = isCover ? scheme.text : scheme.text;
+      if (role === 'heading') color = isCover ? scheme.text : template.colors.primary;
+      if (role === 'subheading' || role === 'caption') color = isCover ? scheme.subtext : template.colors.muted;
+      return { ...el, content: { ...el.content, font: role === 'heading' ? template.fonts.heading : template.fonts.body, color } };
+    }
+    if (el.type === 'shape') return { ...el, content: { ...el.content, fill: template.colors.accent } };
+    if (el.type === 'icon') return { ...el, content: { ...el.content, color: isCover ? scheme.text : template.colors.primary } };
+    return el;
+  });
+  return next;
+}
+
+export function buildExampleSlides(example, t) {
+  const template = getTemplate(example.templateId);
+  return example.outline.map((item, i) => {
+    const slide = buildSlideFromLayout(item.layout, t);
+    const heading = slide.elements.find((e) => e.role === 'heading');
+    if (heading && item.title) heading.content.text = item.title;
+    const body = slide.elements.find((e) => e.role === 'body');
+    if (body && item.body) body.content.text = item.body;
+    if (body && item.bullets) { body.content.listType = 'bullet'; body.content.text = item.bullets.join('\n'); }
+    return applyTemplate(slide, template, i === 0);
+  });
+}
+
 export function generateSlides(topic, count, t) {
   const title = topic?.title?.trim() || t('slide.title.default');
-  const slides = [{
-    id: createId(), type: 'title', title, subtitle: topic?.subtitle || '',
-    body: '', bullets: [], notes: '', image: '',
-  }];
+  const slides = [];
+  const cover = buildSlideFromLayout('title', t, { type: 'solid', color: '#ffffff' });
+  cover.elements[0].content.text = title;
+  if (topic?.subtitle && cover.elements[1]) cover.elements[1].content.text = topic.subtitle;
+  slides.push(cover);
   const middle = Math.max(0, count - 2);
   for (let i = 0; i < middle; i++) {
     let s;
-    if (i === 0) {
-      s = { id: createId(), type: 'content', title: t('slide.intro'), body: t('slide.body.intro'),
-        bullets: [`${t('slide.bullet')} 1`, `${t('slide.bullet')} 2`, `${t('slide.bullet')} 3`], notes: '', image: '' };
-    } else if (i === middle - 1 && middle >= 2) {
-      s = { id: createId(), type: 'content', title: t('slide.conclusion'), body: t('slide.body.conclusion'),
-        bullets: [`${t('slide.bullet')} 1`, `${t('slide.bullet')} 2`], notes: '', image: '' };
-    } else {
-      s = { id: createId(), type: 'content', title: `${t('slide.mainPoint')} ${i}`, body: t('slide.body.main'),
-        bullets: [`${t('slide.bullet')} 1`, `${t('slide.bullet')} 2`, `${t('slide.bullet')} 3`], notes: '', image: '' };
-    }
+    if (i === 0) s = buildSlideFromLayout('titleBullets', t);
+    else if (i === middle - 1 && middle >= 2) s = buildSlideFromLayout('conclusion', t);
+    else s = buildSlideFromLayout('titleBullets', t);
+    const heading = s.elements.find((e) => e.role === 'heading');
+    if (heading) heading.content.text = (i === 0) ? t('slide.intro') : (i === middle - 1 && middle >= 2) ? t('slide.conclusion') : `${t('slide.mainPoint')} ${i}`;
     slides.push(s);
   }
   if (count >= 2) {
-    slides.push({ id: createId(), type: 'references', title: t('slide.references'), body: '', bullets: [], notes: '', image: '' });
+    const r = buildSlideFromLayout('references', t);
+    slides.push(r);
   }
   return slides;
-}
-
-export function newReference() {
-  return { id: createId(), title: '', author: '', year: '', link: '' };
 }
 
 export function defaultStudentInfo() {
@@ -106,7 +144,6 @@ export function createNewContent(documentLanguage) {
   };
 }
 
-// Merge a loaded project's content with defaults so missing fields never break the UI.
 export function normalizeContent(content, t) {
   const base = createNewContent('en');
   const c = { ...base, ...(content || {}) };
@@ -114,14 +151,21 @@ export function normalizeContent(content, t) {
   c.studentInfo = { ...base.studentInfo, ...(c.studentInfo || {}) };
   c.studentInfo.fields = { ...base.studentInfo.fields, ...(c.studentInfo.fields || {}) };
   c.studentInfo.common = { ...base.studentInfo.common, ...(c.studentInfo.common || {}) };
-  const rawStudents = Array.isArray(c.studentInfo.students) && c.studentInfo.students.length
-    ? c.studentInfo.students : base.studentInfo.students;
+  const rawStudents = Array.isArray(c.studentInfo.students) && c.studentInfo.students.length ? c.studentInfo.students : base.studentInfo.students;
   c.studentInfo.students = rawStudents.map((s) => ({ ...s, uid: s.uid || createId() }));
   c.design = { ...base.design, ...(c.design || {}) };
   c.design.background = { ...base.design.background, ...(c.design.background || {}) };
-  c.slides = Array.isArray(c.slides) ? c.slides : [];
-  c.references = Array.isArray(c.references) ? c.references : [];
+  c.slides = (Array.isArray(c.slides) ? c.slides : []).map((s) => migrateSlide(s, t));
+  if (Array.isArray(content && content.references) && content.references.length) {
+    const refSlide = c.slides.find((s) => s.elements.some((e) => e.role === 'heading' && e.content.text === t('slide.references')));
+    if (refSlide) {
+      const body = refSlide.elements.find((e) => e.role === 'body');
+      if (body) body.content.text = content.references.map((r) => [r.author, r.year ? `(${r.year})` : '', r.title, r.link].filter(Boolean).join('. ')).join('\n');
+    }
+  }
+  c.references = [];
   if (!c.slideCount || c.slideCount < 3) c.slideCount = base.slideCount;
+  c.step = Math.max(0, Math.min(c.step || 0, 5));
   return c;
 }
 
@@ -131,3 +175,5 @@ export function createNewProject(documentLanguage, t) {
   shell.content = createNewContent(documentLanguage);
   return shell;
 }
+
+export { templates, examples };
