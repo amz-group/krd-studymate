@@ -15,7 +15,6 @@ const filters = [
   { value: 'presentation', key: 'projects.filter.presentations' },
   { value: 'poster', key: 'projects.filter.posters' },
   { value: 'report', key: 'projects.filter.reports' },
-  { value: 'study', key: 'projects.filter.study' },
 ];
 
 export default function MyProjects() {

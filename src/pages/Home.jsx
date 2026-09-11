@@ -14,7 +14,6 @@ const tools = [
   { to: '/presentation-builder', icon: Presentation, titleKey: 'home.presentation.title', descKey: 'home.presentation.desc', btnKey: 'home.presentation.btn', accent: { bg: '#ede9fe', fg: '#6d28d9' } },
   { to: '/poster-maker', icon: Image, titleKey: 'home.poster.title', descKey: 'home.poster.desc', btnKey: 'home.poster.btn', accent: { bg: '#e0f2fe', fg: '#0369a1' } },
   { to: '/report-assignment', icon: FileText, titleKey: 'home.report.title', descKey: 'home.report.desc', btnKey: 'home.report.btn', accent: { bg: '#d1fae5', fg: '#047857' } },
-  { to: '/study-assistant', icon: GraduationCap, titleKey: 'home.study.title', descKey: 'home.study.desc', btnKey: 'home.study.btn', accent: { bg: '#fef3c7', fg: '#b45309' } },
 ];
 
 export default function Home() {

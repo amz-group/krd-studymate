@@ -13,7 +13,6 @@ import MyProjects from '@/pages/MyProjects';
 import PresentationBuilder from '@/pages/PresentationBuilder';
 import PosterMaker from '@/pages/PosterMaker';
 import ReportAssignment from '@/pages/ReportAssignment';
-import StudyAssistant from '@/pages/StudyAssistant';
 import SettingsPage from '@/pages/Settings';
 import About from '@/pages/About';
 
@@ -31,7 +30,6 @@ function App() {
                 <Route path="/presentation-builder" element={<PresentationBuilder />} />
                 <Route path="/poster-maker" element={<PosterMaker />} />
                 <Route path="/report-assignment" element={<ReportAssignment />} />
-                <Route path="/study-assistant" element={<StudyAssistant />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/about" element={<About />} />
               </Route>

@@ -88,7 +88,7 @@ export function createProjectShell(type, name) {
   return {
     id: createId(),
     name,
-    type,            // presentation | poster | report | study
+    type,            // presentation | poster | report
     content: {},
     created_date: ts,
     updated_date: ts,

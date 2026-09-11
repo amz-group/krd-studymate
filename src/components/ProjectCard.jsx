@@ -8,7 +8,6 @@ const typeIcon = {
   presentation: { icon: FolderOpen, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/15' },
   poster: { icon: FolderOpen, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-100 dark:bg-sky-500/15' },
   report: { icon: FolderOpen, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/15' },
-  study: { icon: FolderOpen, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-500/15' },
 };
 
 function formatDate(iso) {
@@ -29,7 +28,6 @@ export default function ProjectCard({ project, onRename, onDuplicate, onDelete }
     presentation: '/presentation-builder',
     poster: '/poster-maker',
     report: '/report-assignment',
-    study: '/study-assistant',
   }[project.type] || '/projects';
 
   return (
