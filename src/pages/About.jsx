@@ -2,14 +2,16 @@ import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  GraduationCap, Presentation, Image as ImageIcon, FileText, BookOpen,
+  Presentation, Image as ImageIcon, FileText, BookOpen,
   ShieldCheck, HardDrive, WifiOff, ServerOff, UserCog, Save,
   Globe, ExternalLink, ArrowRight, Target, Sparkles, Languages,
 } from 'lucide-react';
+import { Image } from '@/components/ui/image';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/lib/AppContext';
 
 const KRD_URL = 'https://krdgroup.dev';
+const LOGO_URL = 'https://media.base44.com/images/public/6aa3de887f8efa551a56a159/381faf02d_StudayMate.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -69,11 +71,9 @@ export default function About() {
       {/* Hero */}
       <Section className="text-center mb-16 md:mb-20">
         <div className="flex justify-center mb-6">
-          <div className="relative">
+          <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 blur-2xl bg-primary/30 rounded-full" />
-            <div className="relative flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-cyan-500 text-white shadow-lg">
-              <GraduationCap className="h-10 w-10 md:h-12 md:w-12" />
-            </div>
+            <Image src={LOGO_URL} alt="KRD StudyMate" fittingType="fit" className="relative h-24 w-48 md:h-28 md:w-56" />
           </div>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
