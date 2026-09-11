@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { getSettings, saveSettings } from './settings';
 import { translations, rtlLanguages } from './translations';
+import { studyTranslations } from './studyTranslations';
 
 const AppContext = createContext(null);
 
@@ -46,7 +47,8 @@ export function AppProvider({ children }) {
 
   const t = useCallback((key) => {
     const dict = translations[language] || translations.en;
-    return dict[key] ?? translations.en[key] ?? key;
+    return dict[key] ?? (studyTranslations[language] && studyTranslations[language][key])
+      ?? studyTranslations.en[key] ?? translations.en[key] ?? key;
   }, [language]);
 
   const dir = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
