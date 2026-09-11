@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Copy, Trash2, ArrowUp, ArrowDown, Lock, Unlock, Upload } from 'lucide-react';
+import { Copy, Trash2, Lock, Unlock, Upload, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { fonts } from '@/lib/presentationAssets';
 import { downscaleImage } from '@/lib/editorUtils';
 import { cn } from '@/lib/utils';
@@ -39,46 +39,76 @@ function ColorField({ value, onChange }) {
   );
 }
 
+function LayerButtons({ t, onForward, onBackward, onFront, onBack }) {
+  return (
+    <div className="grid grid-cols-4 gap-1">
+      <Button variant="outline" size="sm" onClick={onFront} title={t('ev.action.front')}><ChevronsUp className="h-3.5 w-3.5" /></Button>
+      <Button variant="outline" size="sm" onClick={onForward} title={t('ev.action.forward')}><ChevronUp className="h-3.5 w-3.5" /></Button>
+      <Button variant="outline" size="sm" onClick={onBackward} title={t('ev.action.backward')}><ChevronDown className="h-3.5 w-3.5" /></Button>
+      <Button variant="outline" size="sm" onClick={onBack} title={t('ev.action.back')}><ChevronsDown className="h-3.5 w-3.5" /></Button>
+    </div>
+  );
+}
+
+function ActionRow({ t, onDuplicate, onDelete, onToggleLock, locked }) {
+  return (
+    <div className="flex gap-1">
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onToggleLock} title={locked ? t('ev.action.unlock') : t('ev.action.lock')}>
+        {locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+      </Button>
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDuplicate} title={t('ev.action.duplicate')}><Copy className="h-3.5 w-3.5" /></Button>
+      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onDelete} title={t('ev.action.delete')}><Trash2 className="h-3.5 w-3.5" /></Button>
+    </div>
+  );
+}
+
 export default function PropertiesPanel({
-  slide, selectedEl, ratio, onChangeElement, onChangeRatio, onChangeSlideNotes,
-  onDuplicate, onDelete, onForward, onBackward, onToggleLock,
+  slide, selectedEls, selectedEl, ratio, onChangeElement, onChangeRatio, onChangeSlideNotes, onOpenPanel,
+  onDuplicate, onDelete, onForward, onBackward, onFront, onBack, onToggleLock, onAlign, onDistribute,
 }) {
   const { t } = useApp();
-
   return (
     <div className="w-72 shrink-0 border-s border-border bg-card overflow-y-auto p-3 space-y-4">
-      {selectedEl ? (
-        <ElementProps el={selectedEl} t={t} onChangeElement={onChangeElement} onDuplicate={onDuplicate} onDelete={onDelete} onForward={onForward} onBackward={onBackward} onToggleLock={onToggleLock} />
+      {selectedEls.length > 1 ? (
+        <MultiProps els={selectedEls} t={t} onAlign={onAlign} onDistribute={onDistribute} onDuplicate={onDuplicate} onDelete={onDelete} />
+      ) : selectedEl ? (
+        <ElementProps el={selectedEl} t={t} onChangeElement={onChangeElement} onDuplicate={onDuplicate} onDelete={onDelete}
+          onForward={onForward} onBackward={onBackward} onFront={onFront} onBack={onBack} onToggleLock={onToggleLock} />
       ) : (
-        <SlideProps slide={slide} ratio={ratio} t={t} onChangeRatio={onChangeRatio} onChangeSlideNotes={onChangeSlideNotes} />
+        <SlideProps slide={slide} ratio={ratio} t={t} onChangeRatio={onChangeRatio} onChangeSlideNotes={onChangeSlideNotes} onOpenPanel={onOpenPanel} />
       )}
     </div>
   );
 }
 
-function ElementProps({ el, t, onChangeElement, onDuplicate, onDelete, onForward, onBackward, onToggleLock }) {
+function ElementProps({ el, t, onChangeElement, onDuplicate, onDelete, onForward, onBackward, onFront, onBack, onToggleLock }) {
   const updateContent = (patch) => onChangeElement(el.id, { content: patch });
   const upload = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     const src = await downscaleImage(file);
     updateContent({ src });
   };
+  const title = el.type === 'text' ? t('ev.props.text') : el.type === 'image' ? t('ev.props.image') : el.type === 'shape' ? t('ev.props.shape') : t('ev.props.icon');
   return (
     <>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {el.type === 'text' ? t('ev.props.text') : el.type === 'image' ? t('ev.props.image') : el.type === 'shape' ? t('ev.props.shape') : t('ev.props.icon')}
-        </span>
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onForward} title={t('ev.action.forward')}><ArrowUp className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onBackward} title={t('ev.action.backward')}><ArrowDown className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onToggleLock} title={el.locked ? t('ev.action.unlock') : t('ev.action.lock')}>
-            {el.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDuplicate} title={t('ev.action.duplicate')}><Copy className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onDelete} title={t('ev.action.delete')}><Trash2 className="h-3.5 w-3.5" /></Button>
-        </div>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</span>
+        <ActionRow t={t} onDuplicate={onDuplicate} onDelete={onDelete} onToggleLock={onToggleLock} locked={el.locked} />
       </div>
+
+      <Row label={t('ev.position')}>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground w-3">X</span><Input type="number" value={Math.round(el.x)} onChange={(e) => onChangeElement(el.id, { x: +e.target.value })} className="h-8" /></div>
+          <div className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground w-3">Y</span><Input type="number" value={Math.round(el.y)} onChange={(e) => onChangeElement(el.id, { y: +e.target.value })} className="h-8" /></div>
+        </div>
+      </Row>
+      <Row label={t('ev.size')}>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground w-3">W</span><Input type="number" value={Math.round(el.width)} onChange={(e) => onChangeElement(el.id, { width: Math.max(20, +e.target.value) })} className="h-8" /></div>
+          <div className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground w-3">H</span><Input type="number" value={Math.round(el.height)} onChange={(e) => onChangeElement(el.id, { height: Math.max(20, +e.target.value) })} className="h-8" /></div>
+        </div>
+      </Row>
+      <Row label={t('ev.action.forward')}><LayerButtons t={t} onForward={onForward} onBackward={onBackward} onFront={onFront} onBack={onBack} /></Row>
 
       {el.type === 'text' && (
         <>
@@ -117,6 +147,10 @@ function ElementProps({ el, t, onChangeElement, onDuplicate, onDelete, onForward
             <Upload className="h-4 w-4" /> {el.content.src ? t('ev.image.replace') : t('ev.image.upload')}
             <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" className="hidden" onChange={upload} />
           </label>
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={!!el.content.lockAspect} onChange={(e) => updateContent({ lockAspect: e.target.checked })} />
+            {t('ev.lockAspect')}
+          </label>
           <Row label={t('ev.image.fit')}>
             <Segmented value={el.content.fit} onChange={(v) => updateContent({ fit: v })}
               options={[{ value: 'cover', label: t('ev.image.fill') }, { value: 'fit', label: t('ev.image.fit') }]} />
@@ -152,10 +186,48 @@ function ElementProps({ el, t, onChangeElement, onDuplicate, onDelete, onForward
   );
 }
 
-function SlideProps({ slide, ratio, t, onChangeRatio, onChangeSlideNotes }) {
+function MultiProps({ els, t, onAlign, onDistribute, onDuplicate, onDelete }) {
+  const alignBtn = (label, fn) => (
+    <Button variant="outline" size="sm" onClick={fn} className="text-xs">{label}</Button>
+  );
+  return (
+    <>
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {els.length} {t('ev.multi.elements')}
+      </span>
+      <Row label={t('ev.align.left')}>
+        <div className="grid grid-cols-3 gap-1">
+          {alignBtn(t('ev.align.left'), () => onAlign('left'))}
+          {alignBtn(t('ev.align.centerH'), () => onAlign('centerH'))}
+          {alignBtn(t('ev.align.right'), () => onAlign('right'))}
+          {alignBtn(t('ev.align.top'), () => onAlign('top'))}
+          {alignBtn(t('ev.align.middle'), () => onAlign('middle'))}
+          {alignBtn(t('ev.align.bottom'), () => onAlign('bottom'))}
+        </div>
+      </Row>
+      <Row label={t('ev.distribute.h')}>
+        <div className="grid grid-cols-2 gap-1">
+          {alignBtn(t('ev.distribute.h'), () => onDistribute('h'))}
+          {alignBtn(t('ev.distribute.v'), () => onDistribute('v'))}
+        </div>
+      </Row>
+      <div className="flex gap-1">
+        <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onDuplicate}><Copy className="h-3.5 w-3.5" /> {t('ev.action.duplicate')}</Button>
+        <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-destructive" onClick={onDelete}><Trash2 className="h-3.5 w-3.5" /> {t('ev.action.delete')}</Button>
+      </div>
+    </>
+  );
+}
+
+function SlideProps({ slide, ratio, t, onChangeRatio, onChangeSlideNotes, onOpenPanel }) {
   return (
     <>
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('ev.props.slide')}</span>
+      <div className="grid grid-cols-3 gap-1">
+        <Button variant="outline" size="sm" onClick={() => onOpenPanel('background')}>{t('ev.background')}</Button>
+        <Button variant="outline" size="sm" onClick={() => onOpenPanel('layouts')}>{t('ev.layout')}</Button>
+        <Button variant="outline" size="sm" onClick={() => onOpenPanel('templates')}>{t('ev.template')}</Button>
+      </div>
       <Row label={t('ev.props.slide')}>
         <Segmented value={ratio} onChange={onChangeRatio} options={[{ value: '16:9', label: '16:9' }, { value: '4:3', label: '4:3' }]} />
       </Row>
