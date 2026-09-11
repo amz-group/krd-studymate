@@ -51,5 +51,11 @@ export function useProjects() {
     await reload();
   }, [reload]);
 
-  return { projects, loading, reload, rename, duplicate, remove };
+  const removeAll = useCallback(async () => {
+    const all = await getAllProjects();
+    await Promise.all(all.map((p) => deleteProject(p.id)));
+    await reload();
+  }, [reload]);
+
+  return { projects, loading, reload, rename, duplicate, remove, removeAll };
 }

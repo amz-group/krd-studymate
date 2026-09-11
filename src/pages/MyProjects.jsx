@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, FolderOpen } from 'lucide-react';
+import { Search, FolderOpen, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/lib/AppContext';
@@ -8,6 +8,7 @@ import ProjectCard from '@/components/ProjectCard';
 import EmptyState from '@/components/EmptyState';
 import RenameDialog from '@/components/RenameDialog';
 import DeleteDialog from '@/components/DeleteDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 const filters = [
@@ -19,13 +20,14 @@ const filters = [
 
 export default function MyProjects() {
   const { t } = useApp();
-  const { projects, loading, rename, duplicate, remove } = useProjects();
+  const { projects, loading, rename, duplicate, remove, removeAll } = useProjects();
 
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [sortDesc, setSortDesc] = useState(true);
   const [renameTarget, setRenameTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let list = projects;
@@ -78,9 +80,16 @@ export default function MyProjects() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={() => setSortDesc((v) => !v)}>
-            {t('projects.sort')}: {sortDesc ? '↓' : '↑'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setSortDesc((v) => !v)}>
+              {t('projects.sort')}: {sortDesc ? '↓' : '↑'}
+            </Button>
+            {projects.length > 0 && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-destructive hover:text-destructive" onClick={() => setDeleteAllOpen(true)}>
+                <Trash2 className="h-4 w-4" /> {t('projects.deleteAll')}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -129,6 +138,19 @@ export default function MyProjects() {
           setDeleteTarget(null);
         }}
       />
+
+      <Dialog open={deleteAllOpen} onOpenChange={(o) => setDeleteAllOpen(o)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('projects.deleteAll.title')}</DialogTitle>
+            <DialogDescription>{t('projects.deleteAll.message')}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteAllOpen(false)}>{t('common.cancel')}</Button>
+            <Button variant="destructive" onClick={async () => { await removeAll(); setDeleteAllOpen(false); }}>{t('projects.deleteAll.confirm')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

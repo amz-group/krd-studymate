@@ -59,6 +59,10 @@ export const translations = {
     'projects.filter.posters': 'Posters',
     'projects.filter.reports': 'Reports',
     'projects.filter.study': 'Study Projects',
+    'projects.deleteAll': 'Delete All',
+    'projects.deleteAll.title': 'Delete all projects',
+    'projects.deleteAll.message': 'Are you sure you want to delete ALL projects? This action cannot be undone and will remove every project on this device.',
+    'projects.deleteAll.confirm': 'Delete all',
 
     'rename.title': 'Rename project',
     'rename.placeholder': 'Project name',
@@ -690,6 +694,10 @@ export const translations = {
     'projects.filter.posters': 'پۆستەرەکان',
     'projects.filter.reports': 'ڕاپۆرتەکان',
     'projects.filter.study': 'پڕۆژە خوێندنەکان',
+    'projects.deleteAll': 'سڕینەوەی هەموو',
+    'projects.deleteAll.title': 'سڕینەوەی هەموو پڕۆژەکان',
+    'projects.deleteAll.message': 'دڵنیایت لە سڕینەوەی هەموو پڕۆژەکان؟ ئەم کردارە ناتوانرێت بگەڕێنرێتەوە و هەموو پڕۆژەکان لەسەر ئەم ئامێرە دەسڕێنەوە.',
+    'projects.deleteAll.confirm': 'سڕینەوەی هەموو',
 
     'rename.title': 'ناونانەوەی پڕۆژە',
     'rename.placeholder': 'ناوی پڕۆژە',
@@ -1204,6 +1212,10 @@ export const translations = {
     'projects.filter.posters': 'الملصقات',
     'projects.filter.reports': 'التقارير',
     'projects.filter.study': 'مشاريع الدراسة',
+    'projects.deleteAll': 'حذف الكل',
+    'projects.deleteAll.title': 'حذف جميع المشاريع',
+    'projects.deleteAll.message': 'هل أنت متأكد من حذف جميع المشاريع؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف كل مشروع على هذا الجهاز.',
+    'projects.deleteAll.confirm': 'حذف الكل',
 
     'rename.title': 'إعادة تسمية المشروع',
     'rename.placeholder': 'اسم المشروع',
