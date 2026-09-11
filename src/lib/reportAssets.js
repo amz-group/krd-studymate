@@ -22,6 +22,12 @@ export function fontStack(id) {
   return (reportFonts.find((f) => f.id === id) || reportFonts[0]).stack;
 }
 
+export function fontIdFromStack(stack) {
+  if (!stack) return 'inter';
+  const f = reportFonts.find((x) => stack.includes(x.label) || stack.startsWith(x.stack.slice(0, 6)));
+  return f ? f.id : 'inter';
+}
+
 export const documentCategories = [
   { id: 'report', key: 'rep.type.report' },
   { id: 'assignment', key: 'rep.type.assignment' },

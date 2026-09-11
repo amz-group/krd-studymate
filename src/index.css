@@ -101,4 +101,27 @@
   .dark .card-shadow {
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.5);
   }
+
+  /* Report & Assignment Maker — contentEditable document styles */
+  .rd-editor { outline: none; color: #0f172a; word-wrap: break-word; overflow-wrap: break-word; }
+  .rd-editor p { margin: 0 0 var(--rd-para-space, 8px); line-height: var(--rd-line-height, 1.5); }
+  .rd-editor h1 { font-size: 1.9em; font-weight: 800; margin: 0.6em 0 0.3em; line-height: 1.25; color: var(--rd-primary, #1e293b); }
+  .rd-editor h2 { font-size: 1.5em; font-weight: 700; margin: 0.7em 0 0.3em; line-height: 1.25; color: var(--rd-primary, #1e293b); }
+  .rd-editor h3 { font-size: 1.2em; font-weight: 600; margin: 0.6em 0 0.25em; color: var(--rd-primary, #1e293b); }
+  .rd-editor ul, .rd-editor ol { margin: 0 0 var(--rd-para-space, 8px); padding-inline-start: 1.6em; }
+  .rd-editor li { margin: 2px 0; }
+  .rd-editor blockquote { border-inline-start: 3px solid #cbd5e1; padding-inline-start: 12px; color: #475569; margin: 0 0 var(--rd-para-space, 8px); }
+  .rd-editor table { border-collapse: collapse; width: 100%; margin: 0 0 var(--rd-para-space, 8px); }
+  .rd-editor td, .rd-editor th { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; min-width: 24px; }
+  .rd-editor th { background: #f1f5f9; font-weight: 600; }
+  .rd-editor img { max-width: 100%; height: auto; }
+  .rd-editor .rd-caption { text-align: center; color: #64748b; font-size: 13px; margin: 4px 0 8px; }
+  .rd-editor .rd-fig { margin: 0 0 var(--rd-para-space, 8px); }
+  .rd-editor .rd-page-break { page-break-after: always; border-top: 2px dashed #94a3b8; margin: 24px 0; height: 0; position: relative; }
+  .rd-editor .rd-page-break::after { content: 'Page Break'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; color: #94a3b8; font-size: 11px; padding: 0 8px; }
+  .rd-editor .rd-toc { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 16px; margin: 0 0 var(--rd-para-space, 8px); background: #f8fafc; }
+  .rd-editor .rd-toc-block h2 { margin-top: 0; }
+  .rd-editor .rd-toc-row { font-size: 0.95em; }
+  .rd-editor .rd-refs { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px 12px; margin: 0 0 var(--rd-para-space, 8px); background: #f8fafc; }
+  .rd-editor a { color: #2563eb; text-decoration: underline; }
 }
