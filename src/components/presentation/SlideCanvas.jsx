@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, memo } from 'react';
 import { useApp } from '@/lib/AppContext';
 import { resolveDesign, baseDimensions, isRtl } from '@/lib/presentationModel';
 
@@ -87,7 +87,7 @@ function ReferencesBody({ slide, design, fs, presentation }) {
   );
 }
 
-export default function SlideCanvas({ slide, presentation, className }) {
+function SlideCanvas({ slide, presentation, className }) {
   const { t } = useApp();
   const ref = useRef(null);
   const [scale, setScale] = useState(0);
@@ -118,3 +118,22 @@ export default function SlideCanvas({ slide, presentation, className }) {
     </div>
   );
 }
+
+// Only re-render a canvas when its OWN slide or the shared design/ratio/language/
+// studentInfo/references actually change. This stops every thumbnail from
+// re-rendering (and re-measuring) on each keystroke in an unrelated slide.
+function areEqual(prev, next) {
+  const p = prev.presentation?.content;
+  const n = next.presentation?.content;
+  return (
+    prev.slide === next.slide &&
+    prev.className === next.className &&
+    p?.design === n?.design &&
+    p?.ratio === n?.ratio &&
+    p?.language === n?.language &&
+    p?.studentInfo === n?.studentInfo &&
+    p?.references === n?.references
+  );
+}
+
+export default memo(SlideCanvas, areEqual);

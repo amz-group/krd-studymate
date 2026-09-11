@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Undo2, Redo2, Save, ArrowLeft, ArrowRight, FileText } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
@@ -23,27 +23,38 @@ function Wizard({ initial }) {
   const [step, setStep] = useState(initial.content.step || 0);
   const [projectId] = useState(initial.id);
   const [saveState, setSaveState] = useState('idle');
+  const [attempted, setAttempted] = useState(false);
   const { presentation, update, undo, redo, canUndo, canRedo } = usePresentationState(initial);
 
+  // Keep the latest state accessible to a stable persist callback so we don't
+  // recreate persist on every keystroke (which would churn the auto-save effect).
+  const latestRef = useRef({ presentation, step });
+  latestRef.current = { presentation, step };
+
   const persist = useCallback(async (status) => {
+    const { presentation: p, step: s } = latestRef.current;
     const proj = {
       id: projectId,
-      name: presentation.content.topic.title?.trim() || t('pb.untitled'),
+      name: p.content.topic.title?.trim() || t('pb.untitled'),
       type: 'presentation',
-      status: status || presentation.status || 'draft',
-      content: { ...presentation.content, step },
+      status: status || p.status || 'draft',
+      content: { ...p.content, step: s },
       created_date: initial.created_date,
       updated_date: nowISO(),
     };
     await saveProject(proj);
-  }, [projectId, presentation, step, t, initial.created_date]);
+  }, [projectId, t, initial.created_date]);
 
-  // Auto-save (debounced) when enabled.
+  // Auto-save (debounced) when enabled. Editing state lives in React; we only
+  // write to IndexedDB after the user pauses typing — never on every keystroke.
   useEffect(() => {
     if (!autoSave) return;
     setSaveState('saving');
-    const id = setTimeout(async () => { await persist(null); setSaveState('saved'); }, 800);
-    return () => clearTimeout(id);
+    const timer = setTimeout(async () => {
+      await persist(null);
+      setSaveState('saved');
+    }, 800);
+    return () => clearTimeout(timer);
   }, [presentation, autoSave, persist]);
 
   // Ensure slides exist when entering the editor from a saved draft.
@@ -61,14 +72,16 @@ function Wizard({ initial }) {
   }, [step, presentation]);
 
   const goNext = async () => {
-    if (!canProceed) return;
+    if (!canProceed) { setAttempted(true); return; }
+    setAttempted(false);
     if (step === 2) {
       update((c) => (c.slides.length === 0 || c.slides.length !== c.slideCount ? { ...c, slides: generateSlides(c.topic, c.slideCount, t) } : c));
     }
     setStep(Math.min(step + 1, 6));
     await persist(null);
   };
-  const goBack = async () => { setStep((s) => Math.max(0, s - 1)); await persist(null); };
+  const goBack = async () => { setAttempted(false); setStep((s) => Math.max(0, s - 1)); await persist(null); };
+  const jumpTo = (i) => { setAttempted(false); setStep(i); };
   const saveDraft = async () => { await persist('draft'); setSaveState('saved'); setTimeout(() => setSaveState('idle'), 1500); };
   const finish = async () => { await persist('completed'); navigate('/projects'); };
 
@@ -90,14 +103,14 @@ function Wizard({ initial }) {
             <Button variant="ghost" size="sm" onClick={saveDraft} className="gap-1.5"><Save className="h-4 w-4" />{saveState === 'saved' ? t('pb.saved') : saveState === 'saving' ? t('pb.saving') : t('pb.saveDraft')}</Button>
           </div>
         </div>
-        <WizardStepper steps={stepKeys} current={step} onJump={setStep} />
+        <WizardStepper steps={stepKeys} current={step} onJump={jumpTo} />
       </div>
 
       <div className="px-4 md:px-6">
         {step === 6
           ? <PreviewStep presentation={presentation} onFinish={finish} />
           : <StepComp presentation={presentation} update={update} />}
-        {step !== 6 && !canProceed && (
+        {step !== 6 && attempted && !canProceed && (
           <p className="text-xs text-destructive mt-4 text-center">{step === 0 ? t('pb.topic.titleRequired') : t('pb.slides.invalid')}</p>
         )}
       </div>
@@ -105,7 +118,7 @@ function Wizard({ initial }) {
       {step !== 6 && (
         <div className="px-4 md:px-6 py-3 border-t border-border flex items-center justify-between gap-3 sticky bottom-0 bg-background">
           <Button variant="ghost" onClick={goBack} disabled={step === 0} className="gap-1.5"><ArrowLeft className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />{t('pb.back')}</Button>
-          <Button onClick={goNext} disabled={!canProceed} className="gap-1.5">{t('pb.next')}<ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} /></Button>
+          <Button onClick={goNext} className="gap-1.5">{t('pb.next')}<ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} /></Button>
         </div>
       )}
     </div>

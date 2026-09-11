@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createId } from '@/lib/db';
 
 const fieldDefs = [
   { key: 'name', labelKey: 'pb.student.name' },
@@ -27,7 +28,7 @@ export default function StudentInfoStep({ presentation, update }) {
   const toggle = (k) => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, fields: { ...c.studentInfo.fields, [k]: !c.studentInfo.fields[k] } } }));
   const setCommon = (k, v) => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, common: { ...c.studentInfo.common, [k]: v } } }));
   const setStudent = (idx, k, v) => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, students: c.studentInfo.students.map((s, i) => (i === idx ? { ...s, [k]: v } : s)) } }));
-  const addStudent = () => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, students: [...c.studentInfo.students, { name: '', id: '', stage: '', group: '' }] } }));
+  const addStudent = () => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, students: [...c.studentInfo.students, { uid: createId(), name: '', id: '', stage: '', group: '' }] } }));
   const removeStudent = (idx) => update((c) => ({ ...c, studentInfo: { ...c.studentInfo, students: c.studentInfo.students.filter((_, i) => i !== idx) } }));
 
   return (
@@ -69,7 +70,7 @@ export default function StudentInfoStep({ presentation, update }) {
       <div className="space-y-3">
         <p className="text-sm font-medium">{t('pb.student.students')}</p>
         {si.students.map((s, idx) => (
-          <div key={idx} className="rounded-2xl border border-border p-4 space-y-3">
+          <div key={s.uid} className="rounded-2xl border border-border p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">#{idx + 1}</span>
               {si.students.length > 1 && (

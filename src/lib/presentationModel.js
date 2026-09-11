@@ -84,7 +84,7 @@ export function defaultStudentInfo() {
   return {
     fields: { name: true, id: false, university: true, college: true, department: true, stage: true, group: false, supervisor: true, academicYear: true },
     common: { university: '', college: '', department: '', supervisor: '', academicYear: '' },
-    students: [{ name: '', id: '', stage: '', group: '' }],
+    students: [{ uid: createId(), name: '', id: '', stage: '', group: '' }],
   };
 }
 
@@ -114,8 +114,9 @@ export function normalizeContent(content, t) {
   c.studentInfo = { ...base.studentInfo, ...(c.studentInfo || {}) };
   c.studentInfo.fields = { ...base.studentInfo.fields, ...(c.studentInfo.fields || {}) };
   c.studentInfo.common = { ...base.studentInfo.common, ...(c.studentInfo.common || {}) };
-  c.studentInfo.students = Array.isArray(c.studentInfo.students) && c.studentInfo.students.length
+  const rawStudents = Array.isArray(c.studentInfo.students) && c.studentInfo.students.length
     ? c.studentInfo.students : base.studentInfo.students;
+  c.studentInfo.students = rawStudents.map((s) => ({ ...s, uid: s.uid || createId() }));
   c.design = { ...base.design, ...(c.design || {}) };
   c.design.background = { ...base.design.background, ...(c.design.background || {}) };
   c.slides = Array.isArray(c.slides) ? c.slides : [];
