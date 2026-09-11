@@ -39,7 +39,12 @@ export default function ProjectCard({ project, onRename, onDuplicate, onDelete }
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-sm truncate" title={project.name}>{project.name}</h3>
+          <h3 className="font-semibold text-sm truncate flex items-center gap-2" title={project.name}>
+            {project.name}
+            {project.status === 'draft' && (
+              <span className="text-[10px] font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 px-1.5 py-0.5 shrink-0">{t('pb.draft')}</span>
+            )}
+          </h3>
           <p className="text-xs text-muted-foreground mt-0.5">{t(`project.type.${project.type}`)}</p>
         </div>
         <DropdownMenu>
@@ -72,7 +77,7 @@ export default function ProjectCard({ project, onRename, onDuplicate, onDelete }
         </span>
       </div>
 
-      <Button variant="outline" className="mt-auto w-full" onClick={() => navigate(openRoute)}>
+      <Button variant="outline" className="mt-auto w-full" onClick={() => navigate(`${openRoute}?id=${project.id}`)}>
         {t('project.open')}
       </Button>
     </div>
