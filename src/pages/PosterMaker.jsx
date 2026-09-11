@@ -14,6 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Image as ImageIcon, LayoutTemplate, FilePlus2, BookOpen, Trash2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import RecommendedExamples from '@/components/examples/RecommendedExamples';
+import ExamplePreview from '@/components/examples/ExamplePreview';
+import { createExampleCopy } from '@/lib/examples/registry';
 
 export default function PosterMaker() {
   const [params] = useSearchParams();
@@ -61,6 +64,13 @@ function PosterStartPage() {
   const navigate = useNavigate();
   const { projects, remove } = useProjects();
   const [overlay, setOverlay] = useState(null); // 'blank' | 'template' | 'example'
+  const [previewEx, setPreviewEx] = useState(null);
+
+  const instantiateExample = async (ex) => {
+    const copy = await createExampleCopy(ex, t, saveProject);
+    setPreviewEx(null);
+    navigate(`/poster-maker?id=${copy.id}`);
+  };
 
   const posters = useMemo(() => projects.filter((p) => p.type === 'poster'), [projects]);
 
@@ -133,9 +143,21 @@ function PosterStartPage() {
         )}
       </div>
 
+      <RecommendedExamples type="poster" onPreview={setPreviewEx} />
+
       {overlay === 'blank' && <BlankDialog onClose={() => setOverlay(null)} onConfirm={createBlank} />}
       {overlay === 'template' && <TemplateDialog onClose={() => setOverlay(null)} onConfirm={createFromTemplate} />}
       {overlay === 'example' && <ExampleDialog onClose={() => setOverlay(null)} onConfirm={createFromExample} />}
+
+      {previewEx && (
+        <ExamplePreview
+          example={previewEx}
+          favorite={false}
+          onToggleFavorite={() => {}}
+          onClose={() => setPreviewEx(null)}
+          onUse={() => instantiateExample(previewEx)}
+        />
+      )}
     </div>
   );
 }

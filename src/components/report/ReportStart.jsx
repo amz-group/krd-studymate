@@ -10,6 +10,9 @@ import { saveProject } from '@/lib/db';
 import { createReportProject, getPageSize } from '@/lib/reportModel';
 import { reportTemplates, reportExamples, documentCategories } from '@/lib/reportAssets';
 import { cn } from '@/lib/utils';
+import RecommendedExamples from '@/components/examples/RecommendedExamples';
+import ExamplePreview from '@/components/examples/ExamplePreview';
+import { createExampleCopy } from '@/lib/examples/registry';
 
 export default function ReportStart() {
   const { t, dir } = useApp();
@@ -27,6 +30,13 @@ export default function ReportStart() {
   const [subject, setSubject] = useState('');
   const [studentName, setStudentName] = useState('');
   const [university, setUniversity] = useState('');
+  const [previewEx, setPreviewEx] = useState(null);
+
+  const instantiateExample = async (ex) => {
+    const copy = await createExampleCopy(ex, t, saveProject);
+    setPreviewEx(null);
+    navigate(`/report-assignment?id=${copy.id}`);
+  };
 
   const handleCreate = async () => {
     if (!title.trim()) { window.alert(t('rep.titleRequired')); return; }
@@ -164,6 +174,18 @@ export default function ReportStart() {
             ))}
           </div>
         </section>
+      )}
+
+      <RecommendedExamples type="report" onPreview={setPreviewEx} />
+
+      {previewEx && (
+        <ExamplePreview
+          example={previewEx}
+          favorite={false}
+          onToggleFavorite={() => {}}
+          onClose={() => setPreviewEx(null)}
+          onUse={() => instantiateExample(previewEx)}
+        />
       )}
     </div>
   );

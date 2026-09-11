@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Presentation, Image, FileText, GraduationCap, FolderOpen, ArrowRight } from 'lucide-react';
+import { Presentation, Image, FileText, GraduationCap, FolderOpen, ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/lib/AppContext';
 import { useProjects } from '@/lib/useProjects';
@@ -44,6 +44,31 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {tools.map((tool) => (
             <ToolCard key={tool.to} {...tool} />
+          ))}
+        </div>
+      </section>
+
+      {/* Start from an Example */}
+      <section className="mb-12 md:mb-16">
+        <div className="flex items-center gap-2 mb-4">
+          <LayoutTemplate className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('ex.startFromExample')}</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4 max-w-2xl">{t('ex.startFromExample.desc')}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {[
+            { to: '/examples?type=presentation', icon: Presentation, label: t('ex.home.presentation'), accent: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400' },
+            { to: '/examples?type=poster', icon: Image, label: t('ex.home.poster'), accent: 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400' },
+            { to: '/examples?type=report', icon: FileText, label: t('ex.home.report'), accent: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' },
+          ].map((c) => (
+            <button key={c.to} onClick={() => navigate(c.to)}
+              className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-5 card-shadow transition-all hover:border-primary/40 hover:-translate-y-0.5 text-start">
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${c.accent} shrink-0`}>
+                <c.icon className="h-5 w-5" />
+              </div>
+              <span className="font-medium text-sm flex-1">{c.label}</span>
+              <ArrowRight className={`h-4 w-4 text-muted-foreground group-hover:text-primary ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </button>
           ))}
         </div>
       </section>

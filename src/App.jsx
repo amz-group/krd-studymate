@@ -15,6 +15,7 @@ import PosterMaker from '@/pages/PosterMaker';
 import ReportAssignment from '@/pages/ReportAssignment';
 import SettingsPage from '@/pages/Settings';
 import About from '@/pages/About';
+import Examples from '@/pages/Examples';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/examples" element={<Examples />} />
                 <Route path="/projects" element={<MyProjects />} />
                 <Route path="/presentation-builder" element={<PresentationBuilder />} />
                 <Route path="/poster-maker" element={<PosterMaker />} />
