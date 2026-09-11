@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Presentation, Image as ImageIcon, FileText, BookOpen,
+  Presentation, Image as ImageIcon, FileText,
   ShieldCheck, HardDrive, WifiOff, ServerOff, UserCog, Save,
   Globe, ExternalLink, ArrowRight, Target, Sparkles, Languages,
 } from 'lucide-react';
@@ -41,7 +41,6 @@ export default function About() {
     { icon: Presentation, title: t('about.features.presentation.title'), desc: t('about.features.presentation.desc'), accent: 'from-violet-500 to-indigo-500' },
     { icon: ImageIcon, title: t('about.features.poster.title'), desc: t('about.features.poster.desc'), accent: 'from-sky-500 to-cyan-500' },
     { icon: FileText, title: t('about.features.report.title'), desc: t('about.features.report.desc'), accent: 'from-emerald-500 to-teal-500' },
-    { icon: BookOpen, title: t('about.features.study.title'), desc: t('about.features.study.desc'), accent: 'from-amber-500 to-orange-500' },
   ];
 
   const privacyPoints = [
@@ -113,7 +112,7 @@ export default function About() {
           <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">{t('about.features.title')}</h2>
           <p className="text-muted-foreground mt-2">{t('about.features.subtitle')}</p>
         </div>
-        <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 gap-5 scroll-mt-24">
+        <div ref={featuresRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 scroll-mt-24">
           {features.map((f) => {
             const Icon = f.icon;
             return (
