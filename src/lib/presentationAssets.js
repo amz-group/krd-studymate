@@ -3,7 +3,7 @@ import {
   FlaskConical, Atom, HeartPulse, Stethoscope, MessageSquare, Mail, Globe, Languages,
   BarChart3, PieChart, TrendingUp, Users, User, Target, Rocket, Lightbulb, Code,
   Database, Network, Cloud, Sun, Star, Award, Calendar, Clock, MapPin, Search,
-  Settings, Bell, Camera, Image, FileText, Folder, Wifi, Zap, Bug, Cog, Server,
+  Settings, Bell, Camera, Image, FileText, Folder, Wifi, Zap, Bug, Cog, Server, QrCode,
 } from 'lucide-react';
 
 export const fonts = [
@@ -26,7 +26,7 @@ export const iconMap = {
   FlaskConical, Atom, HeartPulse, Stethoscope, MessageSquare, Mail, Globe, Languages,
   BarChart3, PieChart, TrendingUp, Users, User, Target, Rocket, Lightbulb, Code,
   Database, Network, Cloud, Sun, Star, Award, Calendar, Clock, MapPin, Search,
-  Settings, Bell, Camera, Image, FileText, Folder, Wifi, Zap, Bug, Cog, Server,
+  Settings, Bell, Camera, Image, FileText, Folder, Wifi, Zap, Bug, Cog, Server, QrCode,
 };
 
 export const iconCategories = [
@@ -37,7 +37,7 @@ export const iconCategories = [
   { id: 'science', label: 'Science', icons: ['FlaskConical', 'Atom'] },
   { id: 'health', label: 'Health', icons: ['HeartPulse', 'Stethoscope'] },
   { id: 'communication', label: 'Communication', icons: ['MessageSquare', 'Mail', 'Bell'] },
-  { id: 'general', label: 'General', icons: ['Globe', 'Languages', 'Rocket', 'Star', 'Calendar', 'Clock', 'MapPin', 'Search', 'Settings', 'Camera', 'Image', 'FileText', 'Folder', 'Sun', 'Zap', 'User'] },
+  { id: 'general', label: 'General', icons: ['Globe', 'Languages', 'Rocket', 'Star', 'Calendar', 'Clock', 'MapPin', 'Search', 'Settings', 'Camera', 'Image', 'FileText', 'Folder', 'Sun', 'Zap', 'User', 'QrCode'] },
 ];
 
 export function defaultTextContent(role = 'body') {
