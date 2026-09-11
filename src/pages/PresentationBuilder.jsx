@@ -26,6 +26,17 @@ function Wizard({ initial }) {
   const [attempted, setAttempted] = useState(false);
   const { presentation, update, undo, redo, canUndo, canRedo } = usePresentationState(initial);
 
+  // The hook holds the WHOLE project; steps edit presentation *content*. Wrap the
+  // whole-project update so step code can treat the updater argument as `content`
+  // (e.g. update(c => ({ ...c, topic: {...} }))) and it lands in project.content,
+  // never on the project root.
+  const updateContent = useCallback((updater) => {
+    update((project) => ({
+      ...project,
+      content: typeof updater === 'function' ? updater(project.content) : { ...project.content, ...updater },
+    }));
+  }, [update]);
+
   // Keep the latest state accessible to a stable persist callback so we don't
   // recreate persist on every keystroke (which would churn the auto-save effect).
   const latestRef = useRef({ presentation, step });
@@ -60,7 +71,7 @@ function Wizard({ initial }) {
   // Ensure slides exist when entering the editor from a saved draft.
   useEffect(() => {
     if (presentation.content.slides.length === 0 && step >= 3) {
-      update((c) => ({ ...c, slides: generateSlides(c.topic, c.slideCount, t) }));
+      updateContent((c) => ({ ...c, slides: generateSlides(c.topic, c.slideCount, t) }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -75,7 +86,7 @@ function Wizard({ initial }) {
     if (!canProceed) { setAttempted(true); return; }
     setAttempted(false);
     if (step === 2) {
-      update((c) => (c.slides.length === 0 || c.slides.length !== c.slideCount ? { ...c, slides: generateSlides(c.topic, c.slideCount, t) } : c));
+      updateContent((c) => (c.slides.length === 0 || c.slides.length !== c.slideCount ? { ...c, slides: generateSlides(c.topic, c.slideCount, t) } : c));
     }
     setStep(Math.min(step + 1, 6));
     await persist(null);
@@ -109,7 +120,7 @@ function Wizard({ initial }) {
       <div className="px-4 md:px-6">
         {step === 6
           ? <PreviewStep presentation={presentation} onFinish={finish} />
-          : <StepComp presentation={presentation} update={update} />}
+          : <StepComp presentation={presentation} update={updateContent} />}
         {step !== 6 && attempted && !canProceed && (
           <p className="text-xs text-destructive mt-4 text-center">{step === 0 ? t('pb.topic.titleRequired') : t('pb.slides.invalid')}</p>
         )}
