@@ -82,6 +82,7 @@ export function applyTemplate(slide, template, isCover) {
 }
 
 export function buildExampleSlides(example, t) {
+  if (example.build) return example.build(t);
   const template = getTemplate(example.templateId);
   return example.outline.map((item, i) => {
     const slide = buildSlideFromLayout(item.layout, t);
@@ -175,5 +176,48 @@ export function createNewProject(documentLanguage, t) {
   shell.content = createNewContent(documentLanguage);
   return shell;
 }
+
+// Rich, ready-to-export test presentation: 7 slides with text, bullets, an image,
+// a decorative shape, varied font sizes, and a dark cyber-security background.
+const CYBER_SECURITY_IMAGE = 'https://media.base44.com/images/public/6aa3de887f8efa551a56a159/07c2da88e_generated_image.png';
+function buildCyberSecuritySlides(t) {
+  const template = getTemplate('cyber-security');
+  const accent = template.colors.accent;
+  const outline = [
+    { layout: 'title', title: 'Cyber Security', subtitle: 'Protecting Systems, Networks & Data' },
+    { layout: 'imageText', title: 'Introduction', body: 'Cyber security is the practice of protecting systems, networks, and data from digital attacks, theft, and damage.', image: CYBER_SECURITY_IMAGE },
+    { layout: 'titleBullets', title: 'Common Threats', bullets: ['Malware & viruses', 'Phishing attacks', 'Ransomware', 'Man-in-the-middle'] },
+    { layout: 'titleBullets', title: 'Types of Attacks', bullets: ['Network intrusion', 'Social engineering', 'Password attacks', 'Denial of service'], shape: true },
+    { layout: 'titleBullets', title: 'Protection Measures', bullets: ['Strong, unique passwords', 'Two-factor authentication', 'Regular software updates', 'Security awareness training'] },
+    { layout: 'conclusion', title: 'Conclusion', body: 'Good cyber security habits keep your data, identity, and systems safe in a connected world.' },
+    { layout: 'references', title: 'References' },
+  ];
+  return outline.map((item, i) => {
+    const slide = buildSlideFromLayout(item.layout, t);
+    const heading = slide.elements.find((e) => e.role === 'heading');
+    if (heading && item.title) heading.content.text = item.title;
+    const sub = slide.elements.find((e) => e.role === 'subheading');
+    if (sub && item.subtitle) sub.content.text = item.subtitle;
+    const body = slide.elements.find((e) => e.role === 'body');
+    if (body && item.body) body.content.text = item.body;
+    if (body && item.bullets) { body.content.listType = 'bullet'; body.content.text = item.bullets.join('\n'); }
+    const applied = applyTemplate(slide, template, i === 0);
+    if (item.image) {
+      const imgEl = applied.elements.find((e) => e.type === 'image');
+      if (imgEl) imgEl.content.src = item.image;
+    }
+    if (item.shape) {
+      applied.elements.push(newElement('shape', {
+        x: 880, y: 540, width: 340, height: 80, zIndex: 0,
+        content: { shape: 'rounded', fill: accent, radius: 20, opacity: 0.2, border: 'transparent', borderWidth: 0 },
+      }));
+    }
+    return applied;
+  });
+}
+
+// Attach the custom builder to the Cyber Security example (defined in presentationAssets).
+const _cyberExample = examples.find((e) => e.id === 'cyber-security');
+if (_cyberExample) _cyberExample.build = buildCyberSecuritySlides;
 
 export { templates, examples };

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Undo2, Redo2, Type, Image as ImageIcon, Square, Sparkles, Shapes, LayoutTemplate,
-  Palette, BookOpen, Eye, Save, ZoomIn, ZoomOut, Maximize, Grid3x3, PanelLeft, PanelRight,
+  Palette, BookOpen, Eye, Save, ZoomIn, ZoomOut, Maximize, Grid3x3, PanelLeft, PanelRight, Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/lib/AppContext';
@@ -14,6 +14,7 @@ import EditorCanvas from './EditorCanvas';
 import PropertiesPanel from './PropertiesPanel';
 import ContextMenu from './ContextMenu';
 import { PanelDrawer, AddPanel, TemplatesPanel, LayoutsPanel, BackgroundPanel, IconsPanel, ExamplesPanel } from './ToolbarPanels';
+import ExportDialog from './ExportDialog';
 
 export default function VisualEditor({
   presentation, update, undo, redo, canUndo, canRedo, onPreview, onSave, saveState,
@@ -35,6 +36,7 @@ export default function VisualEditor({
   const [showSlides, setShowSlides] = useState(false);
   const [showProps, setShowProps] = useState(false);
   const [menu, setMenu] = useState(null);
+  const [showExport, setShowExport] = useState(false);
   const clipboard = useRef([]);
 
   const currentSlide = slides.find((s) => s.id === currentSlideId) || slides[0] || null;
@@ -290,6 +292,7 @@ export default function VisualEditor({
         <ToolBtn icon={PanelLeft} label={t('ev.slides')} onClick={() => setShowSlides((v) => !v)} active={showSlides} disabled={focusMode} />
         <ToolBtn icon={PanelRight} label={t('ev.props')} onClick={() => setShowProps((v) => !v)} active={showProps} disabled={focusMode} />
         <div className="ms-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowExport(true)}><Download className="h-4 w-4" /> {t('export.button')}</Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={onPreview}><Eye className="h-4 w-4" /> {t('ev.preview')}</Button>
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={onSave}><Save className="h-4 w-4" />{saveState === 'saving' ? t('pb.saving') : saveState === 'saved' ? t('pb.saved') : t('ev.save')}</Button>
         </div>
@@ -337,6 +340,7 @@ export default function VisualEditor({
       )}
 
       {menu && <ContextMenu x={menu.x} y={menu.y} items={menuItems} onClose={() => setMenu(null)} />}
+      <ExportDialog open={showExport} presentation={presentation} onClose={() => setShowExport(false)} />
     </div>
   );
 }
